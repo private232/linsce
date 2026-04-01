@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>أداة المطور | إنشاء ترخيص AMG</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Tajawal', sans-serif; background: #0f172a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { background: #1e293b; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 400px; border: 1px solid #334155; }
+        h2 { text-align: center; color: #10b981; margin-bottom: 30px; }
+        label { display: block; margin-bottom: 8px; color: #94a3b8; }
+        input { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
+        input:focus { outline: none; border-color: #10b981; }
+        button { width: 100%; padding: 15px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
+        button:hover { background: #059669; }
+        #status { margin-top: 15px; text-align: center; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>إنشاء ملف الترخيص</h2>
+        <label>اسم السوبر ماركت (مغلق على العميل):</label>
+        <input type="text" id="storeName" placeholder="سوبر ماركت..." value="سوبر ماركت الياسمين">
+        
+        <label>باسورد الإدارة الثابت (PIN):</label>
+        <input type="text" id="adminPin" placeholder="مثال: 1234" value="0000" maxlength="4">
+        
+        <label>سيريال الفلاشة أو الهارد ديسك (للحماية):</label>
+        <input type="text" id="hwSerial" placeholder="مثال: 0700445582...">
+        
+        <button onclick="generateLicense()">حفظ وإنشاء الترخيص</button>
+        <p id="status"></p>
+    </div>
+
+    <script>
+        function generateLicense() {
+            const storeName = document.getElementById('storeName').value.trim();
+            const adminPin = document.getElementById('adminPin').value.trim();
+            const hwSerial = document.getElementById('hwSerial').value.trim();
+            const status = document.getElementById('status');
+
+            if(!storeName || !adminPin || !hwSerial) {
+                status.style.color = '#ef4444';
+                status.innerText = 'يرجى ملء جميع الحقول!';
+                return;
+            }
+
+            const licenseData = { storeName, adminPin, hwSerial };
+
+            try {
+                // تحويل البيانات لملف JSON جاهز للتحميل بطريقة مضمونة
+                const jsonStr = JSON.stringify(licenseData, null, 2);
+                const blob = new Blob([jsonStr], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                
+                // إنشاء رابط وهمي والضغط عليه لتحميل الملف
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'license.json';
+                document.body.appendChild(a);
+                a.click();
+                
+                // تنظيف الرابط بعد التحميل
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                }, 0);
+
+                status.style.color = '#10b981';
+                status.innerText = 'تم حفظ ملف الترخيص بنجاح!';
+                alert('تم الحفظ بنجاح!\n\nملاحظة: إذا لم تظهر لك نافذة لاختيار مكان الحفظ، ستجد ملف (license.json) في مجلد التنزيلات (Downloads) بجهازك.');
+                
+            } catch (error) {
+                status.style.color = '#ef4444';
+                status.innerText = 'حدث خطأ أثناء حفظ الملف.';
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
